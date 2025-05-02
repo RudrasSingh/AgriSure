@@ -43,16 +43,25 @@ const dummyDashboardData = {
   ],
 };
 
+// const getDashboard = async()=>{
+
+// }
+
 const DashboardPage = () => {
   const [dashboard, setDashboard] = useState(null);
 
   useEffect(() => {
     // Future: Fetch from backend using Axios
-    /*
-    axios.get("/api/farmer/dashboard")
-      .then(response => setDashboard(response.data))
-      .catch(error => console.error("Error fetching dashboard data", error));
-    */
+
+    axios
+      .get(`${import.meta.env.VITE_BACKEND_BASE_URL}/farmer/dashboard`, {
+        withCredentials: true,
+      })
+      .then((response) => {
+        console.log(response);
+        setDashboard(response.data);
+      })
+      .catch((error) => console.error("Error fetching dashboard data", error));
 
     // Simulating with dummy data
     setDashboard(dummyDashboardData);

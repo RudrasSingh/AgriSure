@@ -88,37 +88,47 @@ const SignupPage = () => {
     setIsLoading(true);
 
     // Create FormData object to handle file upload
-    const submissionData = new FormData();
+    // const submissionData = new FormData();
 
-    // Add all form fields
-    submissionData.append("full_name", data.full_name);
-    submissionData.append("email", data.email);
-    submissionData.append("password", data.password);
-    submissionData.append("phone", data.phone);
-    submissionData.append("address", data.address);
-    submissionData.append("language_pref", data.language_pref);
-    submissionData.append("aadhaar_number", data.aadhaar_number);
-    submissionData.append("upi_id", data.upi_id);
+    // // Add all form fields
+    // submissionData.append("full_name", data.full_name);
+    // submissionData.append("email", data.email);
+    // submissionData.append("password", data.password);
+    // submissionData.append("phone", data.phone);
+    // submissionData.append("address", data.address);
+    // submissionData.append("language_pref", data.language_pref);
+    // submissionData.append("aadhaar_number", data.aadhaar_number);
+    // submissionData.append("upi_id", data.upi_id);
+    const submissionData = {
+      full_name: data.full_name,
+      email: data.email,
+      password: data.password,
+      phone: data.phone,
+      address: data.address,
+      language_pref: data.language_pref,
+      aadhaar_number: data.aadhaar_number,
+      upi_id: data.upi_id,
+      // landDocument: landDocument, // Only if you plan to handle this as base64 or external upload
+    };
 
     // Add file if it exists
-    if (landDocument) {
-      submissionData.append("landDocument", landDocument);
-    }
+    // if (landDocument) {
+    //   submissionData.append("landDocument", landDocument);
+    // }
 
     // Log the form data for development purposes
-    for (let pair of submissionData.entries()) {
-      console.log(pair[0], pair[1]); // Prints key-value pairs
-    }
+    // for (let pair of submissionData.entries()) {
+    //   console.log(pair[0], pair[1]); // Prints key-value pairs
+    // }
 
     // Simulating API call
     // setTimeout(() => {
-      // You would normally use this:
-      handleSignup(submissionData);
+    // You would normally use this:
+    handleSignup(submissionData);
 
-      setIsLoading(false);
-      setSignupComplete(true);
-      setStep(3);
-    
+    setIsLoading(false);
+    setSignupComplete(true);
+    setStep(3);
   };
 
   const handleSignup = async (submissionData) => {
@@ -128,9 +138,9 @@ const SignupPage = () => {
         submissionData,
         {
           headers: {
-            "Content-Type": "multipart/form-data",
+            "Content-Type": "application/json",
           },
-          withCredentials: true, // <-- Add this
+          withCredentials: true,
         }
       );
 

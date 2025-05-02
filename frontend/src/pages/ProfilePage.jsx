@@ -7,11 +7,13 @@ import Button from "../components/Button";
 import ToastNotification from "../components/ToastNotification";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext.jsx";
 
 const ProfilePage = () => {
   const [notification, setNotification] = useState(null);
   const [user, setUser] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const { isLoggedIn, logout } = useAuth();
 
   const {
     register,
@@ -31,17 +33,24 @@ const ProfilePage = () => {
     setUser(fetchedUser);
   }, []);
 
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
   const fetchUserProfile = async () => {
     try {
-      const response = await axios.get(`${import.meta.env.VITE_BACKEND_BASE_URL}/farmer/profile`,{withCredentials: true});
+      const response = await axios.get(
+        `${import.meta.env.VITE_BACKEND_BASE_URL}/farmer/profile`,
+        { withCredentials: true }
+      );
       console.log(response.data);
       setUser(response.data.profile);
-      if(response.status==401){
-        navigate('/login')
+      if (response.status == 401) {
+        navigate("/login");
       }
     } catch (error) {
+      if (error.status == 401) {
+        navigate("/login");
+        logout();
+      }
       console.error("Error fetching user profile:", error);
     }
   };
@@ -70,7 +79,7 @@ const ProfilePage = () => {
 
   const handleUpdateProfile = async (data) => {
     console.log(data);
-    
+
     try {
       // const response = await axios.post(
       //   `${import.meta.env.VITE_BACKEND_BASE_URL}/farmer/update-profile`,
@@ -124,15 +133,26 @@ const ProfilePage = () => {
                   <h2 className="font-semibold text-gray-800 dark:text-white text-xl">
                     👤 Personal Info
                   </h2>
-                  <button 
+                  <button
                     className="text-primary-600 hover:text-primary-800 dark:hover:text-green-600 dark:text-green-500"
                     onClick={() => {
                       reset();
                       setShowModal(true);
                     }}
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="w-5 h-5"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"
+                      />
                     </svg>
                   </button>
                 </div>
