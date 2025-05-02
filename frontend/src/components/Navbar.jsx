@@ -6,6 +6,7 @@ import Button from "./Button";
 import ThemeToggle from "./ThemeToggle";
 import logo from "../assets/logo.png";
 import { useAuth } from "../context/AuthContext.jsx";
+import axios from "axios";
 
 const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -27,11 +28,21 @@ const Navbar = () => {
   const toggleMobileMenu = () => setMobileMenuOpen(!mobileMenuOpen);
   const toggleUserMenu = () => setUserMenuOpen(!userMenuOpen);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     // Handle logout logic here
-    logout();
-    navigate("/login");
-    console.log("Logging out");
+    const response = await axios.post(
+      `${import.meta.env.VITE_BACKEND_BASE_URL}/farmer/logout`,
+      {},
+      {
+        withCredentials: true, // <--- Important
+      }
+    );
+    console.log("Logout response:", response);
+    if (response.status == 200) {
+      logout();
+      navigate("/login");
+      console.log("Logging out");
+    }
   };
 
   const navItems = [

@@ -6,6 +6,7 @@ import Card from "../components/Card";
 import Button from "../components/Button";
 import ToastNotification from "../components/ToastNotification";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const ProfilePage = () => {
   const [notification, setNotification] = useState(null);
@@ -21,20 +22,25 @@ const ProfilePage = () => {
 
   useEffect(() => {
     const fetchedUser = {
-      full_name: "Ramesh Kumar",
-      phone: "6291148267",
-      Address: "Kolkata",
-      language_pref: "English",
-      upi_id: "ramesh@okaxis",
+      full_name: "",
+      phone: "",
+      address: "",
+      language_pref: "",
+      upi_id: "",
     };
     setUser(fetchedUser);
   }, []);
 
+  const navigate = useNavigate()
+
   const fetchUserProfile = async () => {
     try {
-      // const response = await axios.get(`${import.meta.env.VITE_BACKEND_BASE_URL}/farmer/profile`);
-      // console.log(response.data);
-      // setUser(response.data);
+      const response = await axios.get(`${import.meta.env.VITE_BACKEND_BASE_URL}/farmer/profile`,{withCredentials: true});
+      console.log(response.data);
+      setUser(response.data.profile);
+      if(response.status==401){
+        navigate('/login')
+      }
     } catch (error) {
       console.error("Error fetching user profile:", error);
     }
@@ -138,7 +144,7 @@ const ProfilePage = () => {
                     <strong>Phone:</strong> {user.phone}
                   </p>
                   <p>
-                    <strong>Location:</strong> {user.Address}
+                    <strong>Address:</strong> {user.address}
                   </p>
                   <p>
                     <strong>Language:</strong> {user.language_pref}

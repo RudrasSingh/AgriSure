@@ -49,7 +49,7 @@ export const blockchainInData = {
 
 export const insuranceSchemes = [
   {
-    id: "sch001",
+    id: "LIC-AG-2025-01",
     name: "Pradhan Mantri Fasal Bima Yojana",
     description:
       "Covers crop losses due to natural calamities, pests, and diseases.",
@@ -60,7 +60,7 @@ export const insuranceSchemes = [
     coverage: ["Drought", "Flood", "Hailstorm", "Pest attack"],
   },
   {
-    id: "sch002",
+    id: "LIC-FS-2025-02",
     name: "Weather-Based Crop Insurance Scheme",
     description:
       "Provides insurance against adverse weather conditions affecting crops.",
@@ -76,7 +76,7 @@ export const insuranceSchemes = [
     ],
   },
   {
-    id: "sch004",
+    id: "LIC-HS-2025-03",
     name: "Horticulture Crop Insurance",
     description:
       "Covers fruit and vegetable crops against natural calamities and pest attacks.",
@@ -87,7 +87,7 @@ export const insuranceSchemes = [
     coverage: ["Flood", "Pest", "Disease", "Storms"],
   },
   {
-    id: "sch005",
+    id: "LIC-CC-2025-04",
     name: "Unified Package Insurance Scheme",
     description:
       "Covers crop losses along with additional benefits like personal accident and life insurance for farmers.",
@@ -98,7 +98,7 @@ export const insuranceSchemes = [
     coverage: ["Drought", "Flood", "Cyclone", "Pest attack"],
   },
   {
-    id: "sch006",
+    id: "LIC-AT-2025-05",
     name: "Comprehensive Crop Insurance Scheme",
     description:
       "Provides comprehensive coverage for crop losses due to natural calamities and pest attacks.",
@@ -109,7 +109,7 @@ export const insuranceSchemes = [
     coverage: ["Drought", "Flood", "Hailstorm", "Pest attack"],
   },
   {
-    id: "sch007",
+    id: "LIC-Ak-2025-07",
     name: "National Horticulture Insurance Scheme",
     description:
       "Specialized insurance for horticulture crops against natural calamities and diseases.",
@@ -119,26 +119,26 @@ export const insuranceSchemes = [
     duration: "Per season",
     coverage: ["Flood", "Pest", "Disease", "Storms"],
   },
-  {
-    id: "sch008",
-    name: "Rainfall Index-Based Insurance Scheme",
-    description:
-      "Provides insurance based on rainfall index to protect farmers from losses due to insufficient or excess rainfall.",
-    premiumRate: "1.8%",
-    sumInsured: 14160, // 35000 / 2.471
-    eligibility: "Farmers in rainfall-sensitive areas",
-    duration: "Seasonal (Kharif/Rabi)",
-    coverage: ["Excess rainfall", "Deficient rainfall", "Unseasonal rains"],
-  },
-  {
-    id: "sch009",
-    name: "Organic Crop Insurance Scheme",
-    description:
-      "Covers losses for farmers practicing organic farming due to natural calamities and pest attacks.",
-    premiumRate: "2.2%",
-    sumInsured: 28330,
-    eligibility: "Certified organic farmers",
-    duration: "Seasonal (Kharif/Rabi)",
-    coverage: ["Drought", "Flood", "Pest attack", "Disease"],
-  }
+  // {
+  //   id: "LIC-AT-2025-05",
+  //   name: "Rainfall Index-Based Insurance Scheme",
+  //   description:
+  //     "Provides insurance based on rainfall index to protect farmers from losses due to insufficient or excess rainfall.",
+  //   premiumRate: "1.8%",
+  //   sumInsured: 14160, // 35000 / 2.471
+  //   eligibility: "Farmers in rainfall-sensitive areas",
+  //   duration: "Seasonal (Kharif/Rabi)",
+  //   coverage: ["Excess rainfall", "Deficient rainfall", "Unseasonal rains"],
+  // },
+  // {
+  //   id: "sch009",
+  //   name: "Organic Crop Insurance Scheme",
+  //   description:
+  //     "Covers losses for farmers practicing organic farming due to natural calamities and pest attacks.",
+  //   premiumRate: "2.2%",
+  //   sumInsured: 28330,
+  //   eligibility: "Certified organic farmers",
+  //   duration: "Seasonal (Kharif/Rabi)",
+  //   coverage: ["Drought", "Flood", "Pest attack", "Disease"],
+  // }
 ];

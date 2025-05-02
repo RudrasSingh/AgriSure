@@ -1,10 +1,9 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useForm } from "react-hook-form";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import Button from "../components/Button";
-import FormInput from "../components/FormInput";
-import Dropdown from "../components/Dropdown";
 import LoadingSpinner from "../components/LoadingSpinner";
 import ProgressTracker from "../components/ProgressTracker";
 import { Check, Upload } from "lucide-react";
@@ -15,22 +14,29 @@ const SignupPage = () => {
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [uploadComplete, setUploadComplete] = useState(false);
+  const [landDocument, setLandDocument] = useState(null);
   const [signupComplete, setSignupComplete] = useState(false);
 
-  const [formData, setFormData] = useState({
-    full_name: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-    phone: "",
-    address: "",
-    language_pref: "",
-    aadhaar_number: "",
-    landDocument: null,
-    upi_id: "",
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors },
+    trigger,
+    getValues,
+  } = useForm({
+    defaultValues: {
+      full_name: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+      phone: "",
+      address: "",
+      language_pref: "",
+      aadhaar_number: "",
+      upi_id: "",
+    },
   });
-
-  const [errors, setErrors] = useState({});
 
   const languageOptions = [
     { value: "english", label: "English" },
@@ -45,188 +51,19 @@ const SignupPage = () => {
     { value: "bengali", label: "Bengali" },
   ];
 
-  const steps = [
-    "Personal Details",
-    "Document Upload",
-    "Confirmation",
-  ];
+  const steps = ["Personal Details", "Document Upload", "Confirmation"];
 
-  const handleChange = (e) => {
-    const { name, value, files } = e.target;
+  const nextStep = async () => {
+    const isValid = await trigger();
 
-    if (name === "landDocument" && files) {
-      setFormData({ ...formData, [name]: files[0] });
-    } else {
-      setFormData({ ...formData, [name]: value });
-    }
-
-    // Clear error when user types
-    if (errors[name]) {
-      setErrors({ ...errors, [name]: "" });
-    }
-  };
-
-  const validateStep = () => {
-    let isValid = true;
-    const newErrors = {};
-
-    if (step === 1) {
-      if (!formData.full_name.trim()) {
-        newErrors.full_name = "Full name is required";
-        isValid = false;
-      }
-
-      if (!formData.email.trim()) {
-        newErrors.email = "Email is required";
-        isValid = false;
-      } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-        newErrors.email = "Please enter a valid email address";
-        isValid = false;
-      }
-
-      if (!formData.password) {
-        newErrors.password = "Password is required";
-        isValid = false;
-      } else if (formData.password.length < 8) {
-        newErrors.password = "Password must be at least 8 characters long";
-        isValid = false;
-      }
-
-      if (!formData.confirmPassword) {
-        newErrors.confirmPassword = "Please confirm your password";
-        isValid = false;
-      } else if (formData.password !== formData.confirmPassword) {
-        newErrors.confirmPassword = "Passwords do not match";
-        isValid = false;
-      }
-
-      if (!formData.phone) {
-        newErrors.phone = "Phone number is required";
-        isValid = false;
-      } else if (!/^[6-9]\d{9}$/.test(formData.phone)) {
-        newErrors.phone = "Please enter a valid 10-digit mobile number";
-        isValid = false;
-      }
-
-      if (!formData.aadhaar_number) {
-        newErrors.aadhaar = "Aadhaar number is required";
-        isValid = false;
-      } else if (!/^\d{12}$/.test(formData.aadhaar_number)) {
-        newErrors.aadhaar = "Please enter a valid 12-digit Aadhaar number";
-        isValid = false;
-      }
-
-      if (!formData.address.trim()) {
-        newErrors.address = "Address is required";
-        isValid = false;
-      }
-      
-      if (!formData.upi_id.trim()) {
-        newErrors.upi_id = "UPI ID is required";
-        isValid = false;
-      }
-
-      if (!formData.language_pref) {
-        newErrors.language = "Please select your preferred language";
-        isValid = false;
-      }
-    } else if (step === 2) {
-      if (!formData.landDocument) {
-        newErrors.landDocument = "Please upload your land document";
-        isValid = false;
-      }
-    }
-
-    setErrors(newErrors);
-    return isValid;
-  };
-
-  const submitForm = () => {
-    setIsLoading(true);
-
-    // Create FormData object to handle file upload
-    const submissionData = new FormData();
-
-    // Add all form fields
-    submissionData.append("full_name", formData.full_name);
-    submissionData.append("email", formData.email);
-    submissionData.append("password", formData.password);
-    submissionData.append("phone", formData.phone);
-    submissionData.append("address", formData.address);
-    submissionData.append("language", formData.language_pref);
-    submissionData.append("aadhaar", formData.aadhaar_number);
-    submissionData.append("upi_id", formData.upi_id);
-
-    // Add file if it exists
-    if (formData.landDocument) {
-      submissionData.append("landDocument", formData.landDocument);
-    }
-
-    // Log the form data for development purposes
-    for (let pair of submissionData.entries()) {
-      console.log(pair[0], pair[1]); // Prints key-value pairs
-    }
-   
-    // Here you would normally submit the form data to your backend API
-    // For example:
-    // fetch('https://your-api.com/signup', {
-    //   method: 'POST',
-    //   body: submissionData
-    // })
-    // .then(response => response.json())
-    // .then(data => {
-    //   setIsLoading(false);
-    //   setSignupComplete(true);
-    //   setStep(step + 1);
-    // })
-    // .catch(error => {
-    //   console.error('Error submitting form:', error);
-    //   setIsLoading(false);
-    //   setErrors({...errors, submit: 'Failed to submit form. Please try again.'});
-    // });
-
-    // handleSignup(submissionData);
-  };
-  
-  const handleSignup = async (submissionData) => {
-    const response = await axios.post(
-      `${import.meta.env.VITE_BACKEND_BASE_URL}/farmer/signup`,
-      submissionData,
-      {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      }
-    );
-    console.log("Response from server:", response.data);
-  };
-
-  const handleAadharVerification = () => {
-    // Simulate Aadhaar verification
-    return true;
-  };
-
-  const nextStep = () => {
-    if (validateStep()) {
+    if (isValid) {
       if (step === 1) {
-        if (!handleAadharVerification()) {
-          setErrors({ ...errors, aadhaar: "Invalid Aadhaar number" });
+        setStep(2);
+      } else if (step === 2) {
+        if (!landDocument) {
           return;
         }
-      }
-      if (step === 2) {
-        // Handle final step submission
-        setIsLoading(true);
-        submitForm();
-
-        // Simulate form submission
-        setTimeout(() => {
-          setIsLoading(false);
-          setSignupComplete(true);
-          setStep(step + 1);
-        }, 1500);
-      } else {
-        setStep(step + 1);
+        onSubmit(getValues());
       }
     }
   };
@@ -239,16 +76,78 @@ const SignupPage = () => {
     const file = e.target.files[0];
     if (file) {
       if (file.type === "application/pdf") {
-        setFormData({ ...formData, landDocument: file });
+        setLandDocument(file);
         setUploadComplete(true);
-        setErrors({ ...errors, landDocument: "" });
       } else {
-        setErrors({ ...errors, landDocument: "Please upload a PDF file" });
+        alert("Please upload a PDF file");
       }
     }
   };
 
+  const onSubmit = (data) => {
+    setIsLoading(true);
+
+    // Create FormData object to handle file upload
+    const submissionData = new FormData();
+
+    // Add all form fields
+    submissionData.append("full_name", data.full_name);
+    submissionData.append("email", data.email);
+    submissionData.append("password", data.password);
+    submissionData.append("phone", data.phone);
+    submissionData.append("address", data.address);
+    submissionData.append("language_pref", data.language_pref);
+    submissionData.append("aadhaar_number", data.aadhaar_number);
+    submissionData.append("upi_id", data.upi_id);
+
+    // Add file if it exists
+    if (landDocument) {
+      submissionData.append("landDocument", landDocument);
+    }
+
+    // Log the form data for development purposes
+    for (let pair of submissionData.entries()) {
+      console.log(pair[0], pair[1]); // Prints key-value pairs
+    }
+
+    // Simulating API call
+    // setTimeout(() => {
+      // You would normally use this:
+      handleSignup(submissionData);
+
+      setIsLoading(false);
+      setSignupComplete(true);
+      setStep(3);
+    
+  };
+
+  const handleSignup = async (submissionData) => {
+    try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_BACKEND_BASE_URL}/farmer/signup`,
+        submissionData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+          withCredentials: true, // <-- Add this
+        }
+      );
+
+      console.log("Response from server:", response.data);
+      setIsLoading(false);
+      setSignupComplete(true);
+      setStep(3);
+    } catch (error) {
+      console.error("Error signing up:", error);
+      setIsLoading(false);
+      alert("Failed to sign up. Please try again.");
+    }
+  };
+
   const renderStepContent = () => {
+    const watchedValues = getValues();
+
     switch (step) {
       case 1:
         return (
@@ -256,95 +155,234 @@ const SignupPage = () => {
             <h2 className="mb-6 font-semibold text-gray-900 dark:text-neutral-100 text-xl">
               Personal Details
             </h2>
-            <FormInput
-              label="Full Name"
-              type="text"
-              name="full_name"
-              placeholder="Enter your full name"
-              value={formData.full_name}
-              onChange={handleChange}
-              error={errors.full_name}
-              required
-            />
-            <FormInput
-              label="Email Address"
-              type="email"
-              name="email"
-              placeholder="Enter your email address"
-              value={formData.email}
-              onChange={handleChange}
-              error={errors.email}
-              required
-            />
-            <FormInput
-              label="Password"
-              type="password"
-              name="password"
-              placeholder="Create a password"
-              value={formData.password}
-              onChange={handleChange}
-              error={errors.password}
-              required
-            />
-            <FormInput
-              label="Confirm Password"
-              type="password"
-              name="confirmPassword"
-              placeholder="Confirm your password"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              error={errors.confirmPassword}
-              required
-            />
-            <FormInput
-              label="Phone Number"
-              type="tel"
-              name="phone"
-              placeholder="Enter your 10-digit mobile number"
-              value={formData.phone}
-              onChange={handleChange}
-              error={errors.phone}
-              required
-            />
-            <FormInput
-              label="Aadhaar Number"
-              type="text"
-              name="aadhaar"
-              placeholder="Enter your 12-digit Aadhaar number"
-              value={formData.aadhaar_number}
-              onChange={handleChange}
-              error={errors.aadhaar}
-              required
-            />
-            <FormInput
-              label="Address"
-              type="text"
-              name="address"
-              placeholder="Enter your full address"
-              value={formData.address}
-              onChange={handleChange}
-              error={errors.address}
-              required
-            />
-            <FormInput
-              label="UPI ID"
-              type="text"
-              name="upi_id"
-              placeholder="Enter your UPI ID"
-              value={formData.upi_id}
-              onChange={handleChange}
-              error={errors.upi_id}
-              required
-            />
-            <Dropdown
-              label="Preferred Language"
-              name="language"
-              options={languageOptions}
-              value={formData.language_pref}
-              onChange={handleChange}
-              error={errors.language}
-              required
-            />
+            <div className="mb-4">
+              <label className="block mb-1 font-medium text-gray-700 dark:text-neutral-300 text-sm">
+                Full Name <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                className={`w-full px-3 py-2 border rounded-md ${
+                  errors.full_name
+                    ? "border-red-300 focus:border-red-500 focus:ring-red-500"
+                    : "border-gray-300 dark:border-neutral-600 focus:border-green-500 focus:ring-green-500"
+                } focus:outline-none focus:ring-2 focus:ring-opacity-50 dark:bg-neutral-800 dark:text-white`}
+                placeholder="Enter your full name"
+                {...register("full_name", {
+                  required: "Full name is required",
+                })}
+              />
+              {errors.full_name && (
+                <p className="mt-1 text-red-600 dark:text-red-400 text-sm">
+                  {errors.full_name.message}
+                </p>
+              )}
+            </div>
+
+            <div className="mb-4">
+              <label className="block mb-1 font-medium text-gray-700 dark:text-neutral-300 text-sm">
+                Email Address <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="email"
+                className={`w-full px-3 py-2 border rounded-md ${
+                  errors.email
+                    ? "border-red-300 focus:border-red-500 focus:ring-red-500"
+                    : "border-gray-300 dark:border-neutral-600 focus:border-green-500 focus:ring-green-500"
+                } focus:outline-none focus:ring-2 focus:ring-opacity-50 dark:bg-neutral-800 dark:text-white`}
+                placeholder="Enter your email address"
+                {...register("email", {
+                  required: "Email is required",
+                  pattern: {
+                    value: /\S+@\S+\.\S+/,
+                    message: "Please enter a valid email address",
+                  },
+                })}
+              />
+              {errors.email && (
+                <p className="mt-1 text-red-600 dark:text-red-400 text-sm">
+                  {errors.email.message}
+                </p>
+              )}
+            </div>
+
+            <div className="mb-4">
+              <label className="block mb-1 font-medium text-gray-700 dark:text-neutral-300 text-sm">
+                Password <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="password"
+                className={`w-full px-3 py-2 border rounded-md ${
+                  errors.password
+                    ? "border-red-300 focus:border-red-500 focus:ring-red-500"
+                    : "border-gray-300 dark:border-neutral-600 focus:border-green-500 focus:ring-green-500"
+                } focus:outline-none focus:ring-2 focus:ring-opacity-50 dark:bg-neutral-800 dark:text-white`}
+                placeholder="Create a password"
+                {...register("password", {
+                  required: "Password is required",
+                  minLength: {
+                    value: 8,
+                    message: "Password must be at least 8 characters long",
+                  },
+                })}
+              />
+              {errors.password && (
+                <p className="mt-1 text-red-600 dark:text-red-400 text-sm">
+                  {errors.password.message}
+                </p>
+              )}
+            </div>
+
+            <div className="mb-4">
+              <label className="block mb-1 font-medium text-gray-700 dark:text-neutral-300 text-sm">
+                Confirm Password <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="password"
+                className={`w-full px-3 py-2 border rounded-md ${
+                  errors.confirmPassword
+                    ? "border-red-300 focus:border-red-500 focus:ring-red-500"
+                    : "border-gray-300 dark:border-neutral-600 focus:border-green-500 focus:ring-green-500"
+                } focus:outline-none focus:ring-2 focus:ring-opacity-50 dark:bg-neutral-800 dark:text-white`}
+                placeholder="Confirm your password"
+                {...register("confirmPassword", {
+                  required: "Please confirm your password",
+                  validate: (val) => {
+                    if (watch("password") !== val) {
+                      return "Passwords do not match";
+                    }
+                  },
+                })}
+              />
+              {errors.confirmPassword && (
+                <p className="mt-1 text-red-600 dark:text-red-400 text-sm">
+                  {errors.confirmPassword.message}
+                </p>
+              )}
+            </div>
+
+            <div className="mb-4">
+              <label className="block mb-1 font-medium text-gray-700 dark:text-neutral-300 text-sm">
+                Phone Number <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="tel"
+                className={`w-full px-3 py-2 border rounded-md ${
+                  errors.phone
+                    ? "border-red-300 focus:border-red-500 focus:ring-red-500"
+                    : "border-gray-300 dark:border-neutral-600 focus:border-green-500 focus:ring-green-500"
+                } focus:outline-none focus:ring-2 focus:ring-opacity-50 dark:bg-neutral-800 dark:text-white`}
+                placeholder="Enter your 10-digit mobile number"
+                {...register("phone", {
+                  required: "Phone number is required",
+                  pattern: {
+                    value: /^[6-9]\d{9}$/,
+                    message: "Please enter a valid 10-digit mobile number",
+                  },
+                })}
+              />
+              {errors.phone && (
+                <p className="mt-1 text-red-600 dark:text-red-400 text-sm">
+                  {errors.phone.message}
+                </p>
+              )}
+            </div>
+
+            <div className="mb-4">
+              <label className="block mb-1 font-medium text-gray-700 dark:text-neutral-300 text-sm">
+                Aadhaar Number <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                className={`w-full px-3 py-2 border rounded-md ${
+                  errors.aadhaar_number
+                    ? "border-red-300 focus:border-red-500 focus:ring-red-500"
+                    : "border-gray-300 dark:border-neutral-600 focus:border-green-500 focus:ring-green-500"
+                } focus:outline-none focus:ring-2 focus:ring-opacity-50 dark:bg-neutral-800 dark:text-white`}
+                placeholder="Enter your 12-digit Aadhaar number"
+                {...register("aadhaar_number", {
+                  required: "Aadhaar number is required",
+                  pattern: {
+                    value: /^\d{12}$/,
+                    message: "Please enter a valid 12-digit Aadhaar number",
+                  },
+                })}
+              />
+              {errors.aadhaar_number && (
+                <p className="mt-1 text-red-600 dark:text-red-400 text-sm">
+                  {errors.aadhaar_number.message}
+                </p>
+              )}
+            </div>
+
+            <div className="mb-4">
+              <label className="block mb-1 font-medium text-gray-700 dark:text-neutral-300 text-sm">
+                Address <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                className={`w-full px-3 py-2 border rounded-md ${
+                  errors.address
+                    ? "border-red-300 focus:border-red-500 focus:ring-red-500"
+                    : "border-gray-300 dark:border-neutral-600 focus:border-green-500 focus:ring-green-500"
+                } focus:outline-none focus:ring-2 focus:ring-opacity-50 dark:bg-neutral-800 dark:text-white`}
+                placeholder="Enter your full address"
+                {...register("address", { required: "Address is required" })}
+              />
+              {errors.address && (
+                <p className="mt-1 text-red-600 dark:text-red-400 text-sm">
+                  {errors.address.message}
+                </p>
+              )}
+            </div>
+
+            <div className="mb-4">
+              <label className="block mb-1 font-medium text-gray-700 dark:text-neutral-300 text-sm">
+                UPI ID <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                className={`w-full px-3 py-2 border rounded-md ${
+                  errors.upi_id
+                    ? "border-red-300 focus:border-red-500 focus:ring-red-500"
+                    : "border-gray-300 dark:border-neutral-600 focus:border-green-500 focus:ring-green-500"
+                } focus:outline-none focus:ring-2 focus:ring-opacity-50 dark:bg-neutral-800 dark:text-white`}
+                placeholder="Enter your UPI ID"
+                {...register("upi_id", { required: "UPI ID is required" })}
+              />
+              {errors.upi_id && (
+                <p className="mt-1 text-red-600 dark:text-red-400 text-sm">
+                  {errors.upi_id.message}
+                </p>
+              )}
+            </div>
+
+            <div className="mb-4">
+              <label className="block mb-1 font-medium text-gray-700 dark:text-neutral-300 text-sm">
+                Preferred Language <span className="text-red-500">*</span>
+              </label>
+              <select
+                className={`w-full px-3 py-2 border rounded-md ${
+                  errors.language_pref
+                    ? "border-red-300 focus:border-red-500 focus:ring-red-500"
+                    : "border-gray-300 dark:border-neutral-600 focus:border-green-500 focus:ring-green-500"
+                } focus:outline-none focus:ring-2 focus:ring-opacity-50 dark:bg-neutral-800 dark:text-white`}
+                {...register("language_pref", {
+                  required: "Please select your preferred language",
+                })}
+              >
+                <option value="">Select a language</option>
+                {languageOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+              {errors.language_pref && (
+                <p className="mt-1 text-red-600 dark:text-red-400 text-sm">
+                  {errors.language_pref.message}
+                </p>
+              )}
+            </div>
           </div>
         );
       case 2:
@@ -355,11 +393,11 @@ const SignupPage = () => {
             </h2>
             <div className="mb-6">
               <label className="block mb-1 font-medium text-gray-700 dark:text-neutral-300 text-sm">
-                Land Document (PDF)
+                Land Document (PDF) <span className="text-red-500">*</span>
               </label>
               <div
                 className={`border-2 border-dashed ${
-                  errors.landDocument
+                  !landDocument && isLoading
                     ? "border-red-300 dark:border-red-700"
                     : "border-gray-300 dark:border-neutral-600"
                 } rounded-lg p-8 text-center cursor-pointer hover:bg-gray-50 dark:hover:bg-neutral-800/50`}
@@ -379,7 +417,7 @@ const SignupPage = () => {
                         <Check className="w-6 h-6 text-green-600 dark:text-green-400" />
                       </div>
                       <span className="font-medium text-green-600 dark:text-green-400 text-sm">
-                        {formData.landDocument?.name}
+                        {landDocument?.name}
                       </span>
                       <span className="mt-1 text-gray-500 dark:text-neutral-400 text-xs">
                         Click to replace file
@@ -401,9 +439,9 @@ const SignupPage = () => {
                   )}
                 </label>
               </div>
-              {errors.landDocument && (
+              {!landDocument && isLoading && (
                 <p className="mt-1 text-red-600 dark:text-red-400 text-sm">
-                  {errors.landDocument}
+                  Please upload your land document
                 </p>
               )}
             </div>
@@ -422,7 +460,7 @@ const SignupPage = () => {
                 </div>
               </div>
               <h3 className="mb-2 font-medium text-green-800 dark:text-green-200 text-lg text-center">
-                Your account has been successfully created! wait 24hrs for
+                Your account has been successfully created! Wait 24hrs for
                 document verification
               </h3>
               <p className="mb-6 text-gray-600 dark:text-neutral-300 text-center">
@@ -435,7 +473,7 @@ const SignupPage = () => {
                     Name:
                   </span>
                   <span className="font-medium text-gray-900 dark:text-neutral-100">
-                    {formData.full_name}
+                    {watchedValues.full_name}
                   </span>
                 </div>
                 <div className="flex justify-between mb-2">
@@ -443,7 +481,7 @@ const SignupPage = () => {
                     Email:
                   </span>
                   <span className="font-medium text-gray-900 dark:text-neutral-100">
-                    {formData.email}
+                    {watchedValues.email}
                   </span>
                 </div>
                 <div className="flex justify-between mb-2">
@@ -451,7 +489,7 @@ const SignupPage = () => {
                     Phone:
                   </span>
                   <span className="font-medium text-gray-900 dark:text-neutral-100">
-                    {formData.phone}
+                    {watchedValues.phone}
                   </span>
                 </div>
                 <div className="flex justify-between mb-2">
@@ -459,9 +497,9 @@ const SignupPage = () => {
                     Aadhaar:
                   </span>
                   <span className="font-medium text-gray-900 dark:text-neutral-100">
-                    {formData.aadhaar_number.substring(0, 4) +
+                    {watchedValues.aadhaar_number.substring(0, 4) +
                       "XXXX" +
-                      formData.aadhaar_number.substring(8)}
+                      watchedValues.aadhaar_number.substring(8)}
                   </span>
                 </div>
                 <div className="flex justify-between">
@@ -469,7 +507,7 @@ const SignupPage = () => {
                     Document:
                   </span>
                   <span className="font-medium text-gray-900 dark:text-neutral-100">
-                    {formData.landDocument?.name || "Document uploaded"}
+                    {landDocument?.name || "Document uploaded"}
                   </span>
                 </div>
               </div>
@@ -509,38 +547,42 @@ const SignupPage = () => {
               </h1>
               <ProgressTracker steps={steps} currentStep={step} />
               <div className="bg-white/80 dark:bg-neutral-800/80 shadow-lg backdrop-blur-sm mb-8 p-6 rounded-lg">
-                {renderStepContent()}
-                {step < 3 && (
-                  <div className="flex justify-between mt-6">
-                    {step > 1 && (
-                      <Button
-                        variant="outline"
-                        onClick={prevStep}
-                        className="hover:bg-green-50 dark:hover:bg-neutral-700 border-green-600 dark:border-green-400 text-green-600 dark:text-green-400"
-                      >
-                        Back
-                      </Button>
-                    )}
-                    <Button
-                      onClick={nextStep}
-                      disabled={isLoading}
-                      className={`${
-                        step === 1 || (step > 1 && step < 3) ? "ml-auto" : ""
-                      } bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600`}
-                    >
-                      {isLoading ? (
-                        <div className="flex justify-center items-center">
-                          <LoadingSpinner size="sm" className="mr-2" />
-                          <span>Processing...</span>
-                        </div>
-                      ) : step === 2 ? (
-                        "Complete Registration"
-                      ) : (
-                        "Next"
+                <form onSubmit={handleSubmit(onSubmit)}>
+                  {renderStepContent()}
+                  {step < 3 && (
+                    <div className="flex justify-between mt-6">
+                      {step > 1 && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={prevStep}
+                          className="hover:bg-green-50 dark:hover:bg-neutral-700 border-green-600 dark:border-green-400 text-green-600 dark:text-green-400"
+                        >
+                          Back
+                        </Button>
                       )}
-                    </Button>
-                  </div>
-                )}
+                      <Button
+                        type="button"
+                        onClick={nextStep}
+                        disabled={isLoading}
+                        className={`${
+                          step === 1 || (step > 1 && step < 3) ? "ml-auto" : ""
+                        } bg-green-600 hover:bg-green-700 dark:bg-green-500 dark:hover:bg-green-600`}
+                      >
+                        {isLoading ? (
+                          <div className="flex justify-center items-center">
+                            <LoadingSpinner size="sm" className="mr-2" />
+                            <span>Processing...</span>
+                          </div>
+                        ) : step === 2 ? (
+                          "Complete Registration"
+                        ) : (
+                          "Next"
+                        )}
+                      </Button>
+                    </div>
+                  )}
+                </form>
               </div>
             </div>
           </div>

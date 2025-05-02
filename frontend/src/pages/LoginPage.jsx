@@ -53,41 +53,46 @@ const LoginPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (validateForm()) {
       setIsLoading(true);
-      
+
       try {
         // Send login request to backend
         console.log("Logging in with data:", formData);
-        
 
-        // const response = await axios.post(
-        //   `${import.meta.env.VITE_BACKEND_BASE_URL}/farmer/login`,
-        //   {
-        //     email: formData.email,
-        //     password: formData.password,
-        //   }
-        // );
-        
-        // console.log("Login response:", response.data);
-        
+        const response = await axios.post(
+          `${import.meta.env.VITE_BACKEND_BASE_URL}/farmer/login`,
+          {
+            email: formData.email,
+            password: formData.password,
+          },
+          {
+            withCredentials: true, // <--- Important
+          }
+        );
+        console.log("Login response:", response);
+
         // Handle successful login
-        login(); // You might want to pass user data or token to your auth context
-        navigate("/profile"); // Redirect to profile page
+        if (response.status == 200) {
+          login(); // You might want to pass user data or token to your auth context
+          navigate("/profile"); // Redirect to profile page
+        }
       } catch (error) {
         console.error("Login error:", error);
-        
+
         // Handle login errors
         if (error.response && error.response.data) {
           // Server returned an error message
-          setErrors({ 
-            submit: error.response.data.message || "Invalid email or password. Please try again." 
+          setErrors({
+            submit:
+              error.response.data.message ||
+              "Invalid email or password. Please try again.",
           });
         } else {
           // Network or other error
-          setErrors({ 
-            submit: "Login failed. Please check your connection and try again." 
+          setErrors({
+            submit: "Login failed. Please check your connection and try again.",
           });
         }
       } finally {

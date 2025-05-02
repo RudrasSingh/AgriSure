@@ -26,14 +26,10 @@ function calculateCoverage(acres, sumInsuredPerAcre) {
 }
 
 // Internal components
-const PolicyCard = ({
-  policy,
-  selectedPolicy,
-  onSelect,
-}) => {
+const PolicyCard = ({ policy, selectedPolicy, onSelect }) => {
   // Get premium rate as a number
   const premiumRateNumber = parseFloat(policy.premiumRate.replace("%", ""));
-  
+
   // Calculate premium per acre
   const premiumPerAcre = (policy.sumInsured * premiumRateNumber) / 100;
 
@@ -125,7 +121,8 @@ const PremiumCalculation = ({ formData, policyOptions }) => {
       </h2>
       <div className="bg-white dark:bg-neutral-700 shadow-md p-6 rounded-lg">
         <h3 className="mb-4 font-semibold text-gray-800 dark:text-white text-xl">
-          {selectedPolicy.name} - {selectedPolicy.insurer || "Insurance Provider"}
+          {selectedPolicy.name} -{" "}
+          {selectedPolicy.insurer || "Insurance Provider"}
         </h3>
         <div className="space-y-4">
           <div className="flex justify-between py-2 border-gray-200 dark:border-neutral-600 border-b">
@@ -186,7 +183,7 @@ const PolicySuccessDetails = ({ policyData, cropOptions, onNavigate }) => {
       <div className="bg-green-50 dark:bg-green-900/20 p-4 border border-green-200 dark:border-green-800 rounded-lg">
         <h3 className="mb-2 font-semibold text-lg">Policy Details</h3>
         <p>
-          <span className="font-medium">Policy ID:</span> {policyData.policyId}
+          <span className="font-medium">Policy ID:</span> {policyData.policy_num}
         </p>
         <p>
           <span className="font-medium">Crop Type:</span>{" "}
@@ -199,15 +196,15 @@ const PolicySuccessDetails = ({ policyData, cropOptions, onNavigate }) => {
         </p>
         <p>
           <span className="font-medium">Premium Paid:</span> ₹
-          {policyData.premium}
+          {policyData.premium_amount}
         </p>
         <p>
           <span className="font-medium">Coverage Amount:</span> ₹
-          {policyData.coverageAmount}
+          {policyData.coverage_amount}
         </p>
         <p>
           <span className="font-medium">Policy Period:</span>{" "}
-          {policyData.startDate} to {policyData.endDate}
+          {policyData.start_date} to {policyData.end_date}
         </p>
         <p>
           <span className="font-medium">Status:</span>{" "}
@@ -234,8 +231,8 @@ const BuyInsurancePage = () => {
   const [formData, setFormData] = useState({
     cropType: "",
     landSize: "",
-    premium: "",
-    coverageAmount: "",
+    premium_amount: "",
+    coverage_amount: "",
     sowing_date: "",
     exp_yeild: "",
     location: {
@@ -281,15 +278,17 @@ const BuyInsurancePage = () => {
 
     if (selectedPolicy && formData.landSize) {
       // Get premium rate as a number
-      const premiumRateNumber = parseFloat(selectedPolicy.premiumRate.replace("%", ""));
-      
+      const premiumRateNumber = parseFloat(
+        selectedPolicy.premiumRate.replace("%", "")
+      );
+
       // Calculate premium based on the simple function
       const premium = calculatePremium(
-        parseFloat(formData.landSize), 
-        selectedPolicy.sumInsured, 
+        parseFloat(formData.landSize),
+        selectedPolicy.sumInsured,
         premiumRateNumber
       );
-      
+
       const coverageAmount = calculateCoverage(
         parseFloat(formData.landSize),
         selectedPolicy.sumInsured
@@ -322,21 +321,23 @@ const BuyInsurancePage = () => {
 
         if (selectedPolicy) {
           // Get premium rate as a number
-          const premiumRateNumber = parseFloat(selectedPolicy.premiumRate.replace("%", ""));
-          
+          const premiumRateNumber = parseFloat(
+            selectedPolicy.premiumRate.replace("%", "")
+          );
+
           // Calculate premium using the simple function
           const premium = calculatePremium(
             parseFloat(formData.landSize),
             selectedPolicy.sumInsured,
             premiumRateNumber
           );
-          
+
           const coverageAmount = calculateCoverage(
             parseFloat(formData.landSize),
             selectedPolicy.sumInsured
           );
 
-          setFormData(prev => ({
+          setFormData((prev) => ({
             ...prev,
             premium: premium.toFixed(2),
             coverageAmount: coverageAmount.toFixed(2),
@@ -353,34 +354,36 @@ const BuyInsurancePage = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
-    
+
     // Clear error when user types
     if (errors[name]) {
       setErrors({ ...errors, [name]: "" });
     }
-    
+
     // Recalculate premium if changing land size and a policy is already selected
     if (name === "landSize" && formData.selectedPolicy && value > 0) {
       const selectedPolicy = policyOptions.find(
         (policy) => policy.id === formData.selectedPolicy
       );
-      
+
       if (selectedPolicy) {
         // Get premium rate as a number
-        const premiumRateNumber = parseFloat(selectedPolicy.premiumRate.replace("%", ""));
-        
+        const premiumRateNumber = parseFloat(
+          selectedPolicy.premiumRate.replace("%", "")
+        );
+
         const premium = calculatePremium(
           parseFloat(value),
           selectedPolicy.sumInsured,
           premiumRateNumber
         );
-        
+
         const coverageAmount = calculateCoverage(
           parseFloat(value),
           selectedPolicy.sumInsured
         );
 
-        setFormData(prev => ({
+        setFormData((prev) => ({
           ...prev,
           [name]: value,
           premium: premium.toFixed(2),
@@ -438,21 +441,34 @@ const BuyInsurancePage = () => {
   // Function to send API request after payment
   const sendInsuranceData = async (policyData) => {
     try {
+      const response = await axios.post(
+        `${import.meta.env.VITE_BACKEND_BASE_URL}/insurance/buy-policy`,
+        JSON.stringify(policyData), // convert to JSON string
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        }
+      );
+      
+      console.log(response.data);
+
       // const apiUrl = 'https://api.example.com/insurance/policies'; // Replace with your actual API endpoint
-      
+
       // Log the request body before sending
-      console.log('Sending insurance policy data:', policyData);
-      
+      console.log("Sending insurance policy data:", policyData);
+
       // const response = await axios.post(apiUrl, policyData);
-      
+
       // Log the API response
       // console.log('API Response:', response.data);
-      
+
       // setApiResponse(response.data);
       // return response.data;
     } catch (error) {
-      console.error('Error sending insurance data:', error);
-      setApiError(error.message || 'Failed to submit insurance data');
+      console.error("Error sending insurance data:", error);
+      setApiError(error.message || "Failed to submit insurance data");
       return null;
     }
   };
@@ -462,31 +478,31 @@ const BuyInsurancePage = () => {
     setApiError(null);
 
     // Calculate start and end dates
-    const startDate = new Date().toISOString().split('T')[0]; // Today's date in YYYY-MM-DD format
+    const startDate = new Date().toISOString().split("T")[0]; // Today's date in YYYY-MM-DD format
     const endDate = new Date();
     endDate.setMonth(endDate.getMonth() + 6); // Add 6 months to current date
-    const endDateFormatted = endDate.toISOString().split('T')[0]; // Format as YYYY-MM-DD
-    
+    const endDateFormatted = endDate.toISOString().split("T")[0]; // Format as YYYY-MM-DD
+
     // Get selected policy details
     const selectedPolicy = policyOptions.find(
-      policy => policy.id === formData.selectedPolicy
+      (policy) => policy.id === formData.selectedPolicy
     );
 
     // Prepare policy data
     const newPolicyData = {
-      policyId: "POL-" + Math.floor(1000 + Math.random() * 9000),
+      policy_num: "POL-" + Math.floor(1000 + Math.random() * 9000),
       policyName: selectedPolicy?.name || "Crop Insurance Policy",
-      insurerId: selectedPolicy?.id || "",
+      insurer_id: selectedPolicy?.id || "",
       insurerName: selectedPolicy?.insurer || "",
       farmerId: "FARMER-" + Math.floor(1000 + Math.random() * 9000), // Mock farmer ID
       cropType: formData.cropType,
       landSize: parseFloat(formData.landSize),
-      premium: parseFloat(formData.premium),
-      coverageAmount: parseFloat(formData.coverageAmount),
+      premium_amount: parseFloat(formData.premium),
+      coverage_amount: parseFloat(formData.coverageAmount),
       premiumRate: selectedPolicy?.premiumRate || "",
       location: formData.location,
-      startDate: startDate,
-      endDate: endDateFormatted,
+      start_date: startDate,
+      end_date: endDateFormatted,
       status: "Active",
       paymentMethod: "UPI",
       paymentId: "PAY-" + Math.floor(10000000 + Math.random() * 90000000),
@@ -497,7 +513,7 @@ const BuyInsurancePage = () => {
     setTimeout(async () => {
       // Send data to API
       await sendInsuranceData(newPolicyData);
-      
+
       // Update state with the policy data (regardless of API success)
       setPolicyData(newPolicyData);
       setPaymentComplete(true);
