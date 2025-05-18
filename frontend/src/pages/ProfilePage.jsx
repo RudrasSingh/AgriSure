@@ -8,11 +8,13 @@ import ToastNotification from "../components/ToastNotification";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
+import LoadingOverlay from "../components/LoadingOverlay.jsx";
 
 const ProfilePage = () => {
   const [notification, setNotification] = useState(null);
   const [user, setUser] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [loading, setLoading] = useState(false);
   const { isLoggedIn, logout } = useAuth();
 
   const {
@@ -36,17 +38,21 @@ const ProfilePage = () => {
   const navigate = useNavigate();
 
   const fetchUserProfile = async () => {
+    setLoading(true);
     try {
+      
       const response = await axios.get(
         `${import.meta.env.VITE_BACKEND_BASE_URL}/farmer/profile`,
         { withCredentials: true }
       );
       console.log(response.data);
       setUser(response.data.profile);
-      if (response.status == 401) {
-        navigate("/login");
-      }
+      setLoading(false);
+      // if (response.status == 401) {
+      //   navigate("/login");
+      // }
     } catch (error) {
+      setLoading(false);
       if (error.status == 401) {
         navigate("/login");
         logout();
@@ -81,16 +87,17 @@ const ProfilePage = () => {
     console.log(data);
 
     try {
-      // const response = await axios.post(
-      //   `${import.meta.env.VITE_BACKEND_BASE_URL}/farmer/update-profile`,
-      //   {
-      //     full_name: data.full_name,
-      //     Address: data.Address,
-      //     language_pref: data.language_pref,
-      //     upi_id: data.upi_id,
-      //   }
-      // );
-      // console.log(response.data);
+      const response = await axios.post(
+        `${import.meta.env.VITE_BACKEND_BASE_URL}/farmer/update-profile`,
+        {
+          full_name: data.full_name,
+          address: data.address,
+          language_pref: data.language_pref,
+          upi_id: data.upi_id,
+          phone:data.phone
+        }
+      );
+      console.log(response.data);
       setNotification({
         type: "success",
         message: "Profile updated successfully!",
@@ -109,6 +116,7 @@ const ProfilePage = () => {
 
   return (
     <div className="flex flex-col bg-gradient-to-br from-primary-50 dark:from-neutral-900 via-white dark:via-neutral-800 to-secondary-50 dark:to-neutral-950 min-h-screen">
+      <LoadingOverlay isLoading={loading} />
       <Navbar isLoggedIn={true} />
 
       {notification && (
@@ -252,6 +260,16 @@ const ProfilePage = () => {
               })}
               defaultValue={user.Address}
               placeholder={`${user.Address}`}
+              className="bg-transparent p-3 border border-[#717171] rounded-lg text-white"
+            />
+            <label className="text-white">New Phone number</label>
+            <input
+              type="number"
+              {...register("phone", {
+                required: "phone is required",
+              })}
+              defaultValue={user.phone}
+              placeholder={`${user.phone}`}
               className="bg-transparent p-3 border border-[#717171] rounded-lg text-white"
             />
 
